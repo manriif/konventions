@@ -66,6 +66,7 @@ internal fun <E> E.configureKotlin()
         freeCompilerArgs.run {
             add("-Xreturn-value-checker=full")
             add("-Xcontext-sensitive-resolution")
+            add("-Xexpect-actual-classes")
         }
     }
 
@@ -88,9 +89,6 @@ internal fun KotlinMultiplatformExtension.applyHierarchy() {
             group(CONCURRENT_GROUP) {
                 group(JAVA_GROUP) {
                     withJvm()
-
-                    // Also matches the target of the Android KMP library plugin of AGP 9. The
-                    // `withAndroid()` of AGP would make every multiplatform build need AGP.
                     withCompilations { it.target.platformType == KotlinPlatformType.androidJvm }
                 }
 

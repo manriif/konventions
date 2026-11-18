@@ -43,6 +43,7 @@ private val Conventions = listOf("common", "dokka", "jvm", "kmp", "local", "publ
 private val InheritedType = object : TypeOf<Provider<Map<String, String>>>() {}
 
 internal fun Settings.applyKonventions(extension: KonventionsExtension) {
+    enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
     inheritFromIncludingBuild(extension)
     declareRepositories()
     importCatalogOfFolderAbove()

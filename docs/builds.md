@@ -25,7 +25,7 @@ pluginManagement {
 }
 
 plugins {
-    id("io.github.manriif.konventions") version "0.0.1"
+    id("io.github.manriif.konventions") version "0.0.2"
 }
 
 rootProject.name = "build-logic"
@@ -33,6 +33,10 @@ rootProject.name = "build-logic"
 
 A convention of the project reads the `konventions` block of the settings through the
 `KonventionsOfBuild` extension of its project.
+
+Its Kotlin files without a package must not be named like the ones of Konventions, `Targets.kt`
+and `Projects.kt`. The JVM loads one class per name, so the functions of the other file go
+missing.
 
 ## Included builds
 

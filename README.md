@@ -54,10 +54,10 @@ itself, in its settings and in its modules.
 
 | Plugin                                  | What it does                                                                                                                                                                                                  |
 |-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `io.github.manriif.konventions`         | The settings plugin. Declares the repositories, with the Node.js, Yarn and V8 distributions that the Kotlin plugin downloads. Applies the Java toolchain resolver, and gives the `konventionsLibs` catalog of the conventions. |
+| `io.github.manriif.konventions`         | The settings plugin. Declares the repositories, with the Node.js, Yarn and V8 distributions that the Kotlin plugin downloads. Applies the Java toolchain resolver, and turns on the type-safe project accessors. Gives the `konventionsLibs` catalog of the conventions, and the `includeProject` function. |
 | `io.github.manriif.konventions.local`   | Adds the `local` block, where a module gives its name, its description, the namespace of its Android target and the tags of its Gradle plugins. Sets the group and the version of the module.             |
-| `io.github.manriif.konventions.kmp`     | Applies the Kotlin Multiplatform plugin and `local`. Turns on explicit API mode, all warnings as errors, `-Xreturn-value-checker=full` and `-Xcontext-sensitive-resolution`. Sets Kotlin 2.4 as the language and API version, sets the Java toolchain, adds groups of source sets, and adds `kotlin-test` to `commonTest`. |
-| `io.github.manriif.konventions.jvm`     | Applies the Kotlin JVM plugin, with the compiler options and the Java toolchain of `kmp`. Adds `kotlin-test` to the tests.                                                                                    |
+| `io.github.manriif.konventions.kmp`     | Applies the Kotlin Multiplatform plugin and `local`. Turns on explicit API mode, all warnings as errors, `-Xreturn-value-checker=full`, `-Xcontext-sensitive-resolution` and `-Xexpect-actual-classes`. Sets Kotlin 2.4 as the language and API version, sets the Java toolchain, adds groups of source sets, and adds `kotlin-test` to `commonTest`. |
+| `io.github.manriif.konventions.jvm`     | Applies the Kotlin JVM plugin, with the compiler options and the Java toolchain of `kmp`. Adds `kotlin-test` to the tests, and runs them on the JUnit Platform.                                                                                    |
 | `io.github.manriif.konventions.publish` | Publishes to Maven Central with the vanniktech plugin, signs the publications and fills the POM.                                                                                                             |
 | `io.github.manriif.konventions.dokka`   | Configures the API reference. In the root project, writes it to `docs/api/<version>`.                                                                                                                         |
 | `io.github.manriif.konventions.common`  | Applies `dokka` and `publish`. With `kmp` or `jvm`, checks the public API against the dump committed in the module.                                                                                           |
@@ -90,7 +90,7 @@ pluginManagement {
 }
 
 plugins {
-    id("io.github.manriif.konventions") version "0.0.1"
+    id("io.github.manriif.konventions") version "0.0.2"
 }
 
 rootProject.name = "example-project"
@@ -101,7 +101,7 @@ konventions {
     license = Mit
 }
 
-include(":example")
+includeProject("example")
 ```
 
 `repository` is the name of the GitHub repository. The group of the modules is
@@ -150,6 +150,21 @@ A module applies its conventions and describes itself in `local`, as in the exam
 this page.
 
 ## Usage
+
+### Projects
+
+The settings plugin gives `includeProject`, which includes a project from its folders, at any
+depth. Unlike `include`, the path takes no leading colon.
+
+```kotlin
+includeProject("example")
+includeProject("example-extensions", "datetime")
+```
+
+The second line includes the project of the `example-extensions/datetime` folder, named
+`example-extensions-datetime`. Gradle builds a path from the names, so its path is
+`:example-extensions:example-extensions-datetime`. A project named after all its folders keeps a
+unique name, and so a unique artifact, when another project ends with the same folder.
 
 ### Targets
 
@@ -234,6 +249,8 @@ Two settings keep a release from breaking the code of its users.
 - An included build that runs alone needs its own `konventions` block. Otherwise it takes the one
   of the build that includes it.
 - Progressive mode is off. It fails the build when the language version is older than the compiler.
+- The type-safe project accessors are always on. A project can't be named like a member of a Gradle
+  dependency, such as `group`, `name`, `path` or `version`, or Gradle fails to generate them.
 - Kotlin deprecates `macosX64`, `tvosX64` and `watchosX64`. `appleTargets()` will stop working
   with the version of Kotlin that removes them.
 

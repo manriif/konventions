@@ -1,7 +1,7 @@
 [versions]
 
 # Project version
-konventions = "0.0.1"
+konventions = "0.0.2"
 
 # Jvm toolchain
 jvm-toolchain = "17"
