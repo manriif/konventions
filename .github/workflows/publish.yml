@@ -27,6 +27,11 @@ jobs:
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
           cache-read-only: true
+      - name: Check that the tag is the version
+        if: github.ref_type == 'tag'
+        run: |
+          ./gradlew -q :konventions-plugins:properties --property version |
+            grep -qx "version: $GITHUB_REF_NAME"
       - name: Publish to Maven Central
         run: ./gradlew publishToMavenCentral
         env:

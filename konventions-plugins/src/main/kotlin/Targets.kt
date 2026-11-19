@@ -19,10 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:JvmName("KonventionsTargets")
+
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
+import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
+import konventions.LocalExtension
 import konventions.catalogVersion
 import konventions.environments
-import konventions.local
+import konventions.requiredLocal
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByName
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -139,8 +144,6 @@ public fun KotlinMultiplatformExtension.webTargets(
  */
 public fun KotlinMultiplatformExtension.androidJvmTargets(): List<KotlinMultiplatformAndroidLibraryTarget> {
     val android = extensions.getByName<KotlinMultiplatformAndroidLibraryTarget>("android").apply {
-        namespace = project.local.namespace.get()
-
         compileSdk {
             version = release(project.catalogVersion("android-sdk-compile").toInt())
         }
@@ -150,6 +153,10 @@ public fun KotlinMultiplatformExtension.androidJvmTargets(): List<KotlinMultipla
         }
 
         withHostTest {}
+    }
+
+    project.extensions.configure<KotlinMultiplatformAndroidComponentsExtension> {
+        finalizeDsl { it.namespace = project.requiredLocal(LocalExtension::namespace).get() }
     }
 
     return listOf(android)

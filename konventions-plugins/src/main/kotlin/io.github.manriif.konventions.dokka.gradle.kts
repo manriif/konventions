@@ -20,8 +20,10 @@
  * SOFTWARE.
  */
 import konventions.DEVELOPER_NAME
-import konventions.local
+import konventions.LocalExtension
+import konventions.ModuleDocumentation
 import konventions.repositoryUrl
+import konventions.requiredLocal
 import konventions.shared
 import org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.Companion.COMMON_MAIN_SOURCE_SET_NAME
@@ -31,10 +33,22 @@ plugins {
     org.jetbrains.dokka
 }
 
+private val localName = requiredLocal(LocalExtension::name)
+private val directory = projectDir.relativeTo(rootDir).invariantSeparatorsPath
+private val readmeFile = layout.projectDirectory.file("README.md")
+private val repository = repositoryUrl
+
+private val moduleDocumentation = tasks.register<ModuleDocumentation>("dokkaModuleDocumentation") {
+    readme = readmeFile
+    moduleName = localName
+    repositoryUrl = repository
+    moduleDirectory = directory
+    documentation = layout.buildDirectory.file("dokka/module.md")
+}
+
 dokka {
     dokkaPublications.html {
-        moduleName = local.name
-        failOnWarning = true
+        moduleName = localName
 
         if (projectDir == rootDir) {
             outputDirectory = layout.projectDirectory.dir("docs/api").dir(moduleVersion)
@@ -42,18 +56,15 @@ dokka {
     }
 
     dokkaSourceSets.configureEach {
-        val readme = projectDir.resolve("README.md")
         val main = name == COMMON_MAIN_SOURCE_SET_NAME || name == MAIN_SOURCE_SET_NAME
 
-        if (main && readme.exists()) {
-            includes.from(readme)
+        if (main && readmeFile.asFile.exists()) {
+            includes.from(moduleDocumentation)
         }
-
-        val moduleDir = projectDir.relativeTo(rootDir).invariantSeparatorsPath
 
         sourceLink {
             localDirectory.set(projectDir.resolve("src"))
-            remoteUrl(repositoryUrl.map { "$it/tree/main/$moduleDir/src" })
+            remoteUrl(repository.map { "$it/tree/main/$directory/src" })
             remoteLineSuffix.set("#L")
         }
     }

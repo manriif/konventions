@@ -19,10 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+import konventions.applyKotlinPlugin
 import konventions.configureKotlin
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
-pluginManager.apply("org.jetbrains.kotlin.jvm")
+applyKotlinPlugin("org.jetbrains.kotlin.jvm")
 
 extensions.configure<KotlinJvmProjectExtension> {
     configureKotlin()

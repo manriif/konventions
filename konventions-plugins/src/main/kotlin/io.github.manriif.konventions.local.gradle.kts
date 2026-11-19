@@ -30,4 +30,7 @@ private val repository = shared.repository.orNull
     ?: throw GradleException("The settings of this build declare no `konventions` block")
 
 group = "io.github.$DEVELOPER_ID.$repository"
-version = catalogVersion(repository)
+version = catalogVersion(
+    alias = repository,
+    purpose = "the version of the modules, named after `konventions.repository`",
+)

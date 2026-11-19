@@ -22,9 +22,11 @@
 import konventions.DEVELOPER_ID
 import konventions.DEVELOPER_NAME
 import konventions.DEVELOPER_URL
+import konventions.LocalExtension
 import konventions.local
 import konventions.repositoryPath
 import konventions.repositoryUrl
+import konventions.requiredLocal
 import konventions.shared
 import org.gradle.plugin.compatibility.compatibility
 import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
@@ -40,8 +42,8 @@ mavenPublishing {
     signAllPublications()
 
     pom {
-        name = local.name
-        description = local.description
+        name = requiredLocal(LocalExtension::name)
+        description = requiredLocal(LocalExtension::description)
         url = repositoryUrl
         inceptionYear = shared.inceptionYear.map { it.toString() }
 
@@ -88,8 +90,8 @@ pluginManager.withPlugin("com.gradle.plugin-publish") {
     // A declaration takes its name and description as strings, so they wait for the `local` block
     afterEvaluate {
         gradlePlugin.plugins.configureEach {
-            displayName = displayName ?: local.name.get()
-            description = description ?: local.description.get()
+            displayName = displayName ?: requiredLocal(LocalExtension::name).get()
+            description = description ?: requiredLocal(LocalExtension::description).get()
         }
     }
 }

@@ -39,7 +39,7 @@ private const val REPOSITORY = "repository"
 private const val INCEPTION_YEAR = "inceptionYear"
 private const val LICENSE = "license"
 
-private val Conventions = listOf("common", "dokka", "jvm", "kmp", "local", "publish")
+private val Conventions = listOf("common", "dokka", "internal", "jvm", "kmp", "local", "publish")
 private val InheritedType = object : TypeOf<Provider<Map<String, String>>>() {}
 
 internal fun Settings.applyKonventions(extension: KonventionsExtension) {
@@ -128,6 +128,10 @@ private fun Settings.declareRepositories() {
                 group = "google.d8",
                 module = "v8",
             )
+
+            if (gradle.parent != null) {
+                gradlePluginPortal()
+            }
         }
     }
 }

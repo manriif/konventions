@@ -19,8 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import konventions.applyHierarchy
+import konventions.applyKotlinPlugin
 import konventions.configureKotlin
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
@@ -28,13 +29,14 @@ plugins {
     id("io.github.manriif.konventions.local")
 }
 
-pluginManager.apply("org.jetbrains.kotlin.multiplatform")
+applyKotlinPlugin("org.jetbrains.kotlin.multiplatform")
 
 extensions.configure<KotlinMultiplatformExtension> {
     configureKotlin()
 
     if (providers.gradleProperty("kotlin.mpp.applyDefaultHierarchyTemplate").orNull != "false") {
-        applyHierarchy()
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        applyHierarchyTemplate(KonventionsHierarchy)
     }
 
     sourceSets.commonTest.dependencies {

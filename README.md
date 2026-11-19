@@ -52,18 +52,21 @@ itself, in its settings and in its modules.
 
 ## Conventions
 
-| Plugin                                  | What it does                                                                                                                                                                                                  |
-|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `io.github.manriif.konventions`         | The settings plugin. Declares the repositories, with the Node.js, Yarn and V8 distributions that the Kotlin plugin downloads. Applies the Java toolchain resolver, and turns on the type-safe project accessors. Gives the `konventionsLibs` catalog of the conventions, and the `includeProject` function. |
-| `io.github.manriif.konventions.local`   | Adds the `local` block, where a module gives its name, its description, the namespace of its Android target and the tags of its Gradle plugins. Sets the group and the version of the module.             |
-| `io.github.manriif.konventions.kmp`     | Applies the Kotlin Multiplatform plugin and `local`. Turns on explicit API mode, all warnings as errors, `-Xreturn-value-checker=full`, `-Xcontext-sensitive-resolution` and `-Xexpect-actual-classes`. Sets Kotlin 2.4 as the language and API version, sets the Java toolchain, adds groups of source sets, and adds `kotlin-test` to `commonTest`. |
-| `io.github.manriif.konventions.jvm`     | Applies the Kotlin JVM plugin, with the compiler options and the Java toolchain of `kmp`. Adds `kotlin-test` to the tests, and runs them on the JUnit Platform.                                                                                    |
-| `io.github.manriif.konventions.publish` | Publishes to Maven Central with the vanniktech plugin, signs the publications and fills the POM.                                                                                                             |
-| `io.github.manriif.konventions.dokka`   | Configures the API reference. In the root project, writes it to `docs/api/<version>`.                                                                                                                         |
-| `io.github.manriif.konventions.common`  | Applies `dokka` and `publish`. With `kmp` or `jvm`, checks the public API against the dump committed in the module.                                                                                           |
+| Plugin                                   | What it does                                                                                                                                                                                                  |
+|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `io.github.manriif.konventions`          | The settings plugin. Declares the repositories, with the Node.js, Yarn and V8 distributions that the Kotlin plugin downloads. Applies the Java toolchain resolver, and turns on the type-safe project accessors. Gives the `konventionsLibs` catalog of the conventions, and the `includeProject` function. |
+| `io.github.manriif.konventions.local`    | Adds the `local` block, where a module gives its name, its description, the namespace of its Android target and the tags of its Gradle plugins. Sets the group and the version of the module.             |
+| `io.github.manriif.konventions.kmp`      | Applies the Kotlin Multiplatform plugin and `local`. Turns on explicit API mode, all warnings as errors, `-Xreturn-value-checker=full`, `-Xcontext-sensitive-resolution` and `-Xexpect-actual-classes`. Sets Kotlin 2.4 as the language and API version, sets the Java toolchain, adds groups of source sets, and adds `kotlin-test` to `commonTest`. |
+| `io.github.manriif.konventions.jvm`      | Applies the Kotlin JVM plugin, with the compiler options and the Java toolchain of `kmp`. Adds `kotlin-test` to the tests, and runs them on the JUnit Platform.                                                                                    |
+| `io.github.manriif.konventions.publish`  | Publishes to Maven Central with the vanniktech plugin, signs the publications and fills the POM.                                                                                                             |
+| `io.github.manriif.konventions.dokka`    | Configures the API reference, with the `README.md` of the module as its first page. In the root project, writes it to `docs/api/<version>`. |
+| `io.github.manriif.konventions.internal` | Applies `dokka` and `publish`, for a published module that only the other modules of the project use. Records no API. |
+| `io.github.manriif.konventions.common`   | Applies `internal`. With `kmp` or `jvm`, checks the public API against the dump committed in the module. |
 
-A published module applies `common` next to `kmp` or `jvm`. A module with tests only applies `kmp`
-or `jvm` alone. It is not published and records no API.
+A public module applies `common` next to `kmp` or `jvm`. A published module that only the other
+modules of the project use applies `internal` instead, since its public declarations are not the
+API of the library. A module with tests only applies `kmp` or `jvm` alone. It is not published
+and records no API.
 
 ## Requirements
 
@@ -90,7 +93,7 @@ pluginManagement {
 }
 
 plugins {
-    id("io.github.manriif.konventions") version "0.0.2"
+    id("io.github.manriif.konventions") version "0.0.3"
 }
 
 rootProject.name = "example-project"
@@ -137,7 +140,7 @@ local {
 }
 
 dependencies {
-    dokka(project(":example"))
+    dokka(projects.example)
 }
 ```
 
@@ -215,16 +218,37 @@ The `kmp` convention adds groups to the default hierarchy of Kotlin, which alrea
 | `nonWeb`        | Every target but JS and Wasm JS.     |
 | `unix`          | The Native targets but Windows.      |
 
-A project adds its own groups by applying another hierarchy template, which Kotlin merges with
-this one. A project that wants none of these groups sets
-`kotlin.mpp.applyDefaultHierarchyTemplate=false` in its `gradle.properties`, then applies its own
-template. That property also turns off the default hierarchy of Kotlin.
+A module adds its own groups by extending this hierarchy, `KonventionsHierarchy`. A group like
+`native` keeps its targets in the extension. A template of its own would see it empty.
+
+```kotlin
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
+kotlin {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyHierarchyTemplate(KonventionsHierarchy) {
+        common {
+            group("nonAndroid") {
+                group("jvmNative") {
+                    withJvm()
+                    group("native")
+                }
+            }
+        }
+    }
+}
+```
+
+A project that wants none of these groups sets `kotlin.mpp.applyDefaultHierarchyTemplate=false` in
+its `gradle.properties`, then applies its own template. That property also turns off the default
+hierarchy of Kotlin.
 
 ### API reference
 
-The `README.md` of a module, when it has one, describes the module and its packages. The root
-project gathers the modules it depends on and writes them to `docs/api/<version>`, one folder per
-version.
+The `README.md` of a module, when it has one, becomes the first page of its reference. Its first
+title gives way to the name of the module. Its relative links and anchors point to the repository
+on GitHub, since Dokka reads other links as declarations. The root project gathers the modules it
+depends on and writes them to `docs/api/<version>`, one folder per version.
 
 ```shell
 ./gradlew :dokkaGenerate
@@ -234,7 +258,7 @@ version.
 
 Two settings keep a release from breaking the code of its users.
 
-- The public API of a published module is recorded in its `api` folder. The build fails when the
+- The public API of a public module is recorded in its `api` folder. The build fails when the
   code no longer matches it. After an intended change, run `./gradlew updateKotlinAbi` and commit
   the new dump, so that the change shows in the review.
 - The libraries are compiled with Kotlin 2.4 as the language and API version. A library built with
@@ -244,11 +268,14 @@ Two settings keep a release from breaking the code of its users.
 
 - The root build script declares the Kotlin and Android plugins with `apply false`. The
   conventions use their classes without bringing them, so the build fails without them.
-- The `local` block comes before the `kotlin` block. The Android target reads its namespace when it
-  is created.
+- The root build script also declares each convention that a module applies, like `internal`,
+  with `apply false`. Otherwise Gradle fails with "the plugin is already on the classpath with an
+  unknown version".
 - An included build that runs alone needs its own `konventions` block. Otherwise it takes the one
   of the build that includes it.
 - Progressive mode is off. It fails the build when the language version is older than the compiler.
+- A catalog version next to `jvm-toolchain`, like `jvm-toolchain-ffm`, turns
+  `libs.versions.jvm.toolchain` into a group. A build script then reads it with `.asProvider()`.
 - The type-safe project accessors are always on. A project can't be named like a member of a Gradle
   dependency, such as `group`, `name`, `path` or `version`, or Gradle fails to generate them.
 - Kotlin deprecates `macosX64`, `tvosX64` and `watchosX64`. `appleTargets()` will stop working

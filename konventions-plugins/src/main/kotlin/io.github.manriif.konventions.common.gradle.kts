@@ -24,11 +24,10 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
-    id("io.github.manriif.konventions.dokka")
-    id("io.github.manriif.konventions.publish")
+    id("io.github.manriif.konventions.internal")
 }
 
-// A published library records its public API. The build compares it with the dump committed in
+// A public module records its public API. The build compares it with the dump committed in
 // the project directory. This takes this convention and `kmp` or `jvm`. A module with tests only
 // applies `kmp` or `jvm` alone, and a module with its own Kotlin setup applies this one alone.
 pluginManager.withPlugin("io.github.manriif.konventions.kmp") {
