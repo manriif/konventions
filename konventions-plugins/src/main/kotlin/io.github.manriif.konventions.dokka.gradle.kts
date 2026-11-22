@@ -50,7 +50,7 @@ dokka {
     dokkaPublications.html {
         moduleName = localName
 
-        if (projectDir == rootDir) {
+        if (projectDir == rootDir && gradle.parent == null) {
             outputDirectory = layout.projectDirectory.dir("docs/api").dir(moduleVersion)
         }
     }

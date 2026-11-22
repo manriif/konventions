@@ -26,7 +26,7 @@ pluginManagement {
 }
 
 plugins {
-    id("io.github.manriif.konventions") version "0.0.3"
+    id("io.github.manriif.konventions") version "0.0.4"
 }
 
 rootProject.name = "build-logic"
@@ -43,4 +43,5 @@ repository share their settings and their catalog.
 
 The API reference of the root can gather the modules of a build that the settings include outside
 `pluginManagement`. The root build script names them by their coordinates in the catalog, like
-`dokka(libs.example.annotations)`, and Gradle substitutes the projects of the included build.
+`dokka(libs.example.annotations)`, and Gradle substitutes the projects of the included build. An
+included build writes no `docs/api` of its own.

@@ -94,11 +94,7 @@ private fun Settings.importCatalogOfFolderAbove() {
 ///////////////////////////////////////////////////////////////////////////
 
 private fun Settings.declareRepositories() {
-    pluginManagement.repositories.run {
-        gradlePluginPortal()
-        mavenCentral()
-        google()
-    }
+    pluginManagement.repositories.google()
 
     dependencyResolutionManagement.run {
         repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)

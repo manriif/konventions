@@ -59,7 +59,7 @@ itself, in its settings and in its modules.
 | `io.github.manriif.konventions.kmp`      | Applies the Kotlin Multiplatform plugin and `local`. Turns on explicit API mode, all warnings as errors, `-Xreturn-value-checker=full`, `-Xcontext-sensitive-resolution` and `-Xexpect-actual-classes`. Sets Kotlin 2.4 as the language and API version, sets the Java toolchain, adds groups of source sets, and adds `kotlin-test` to `commonTest`. |
 | `io.github.manriif.konventions.jvm`      | Applies the Kotlin JVM plugin, with the compiler options and the Java toolchain of `kmp`. Adds `kotlin-test` to the tests, and runs them on the JUnit Platform.                                                                                    |
 | `io.github.manriif.konventions.publish`  | Publishes to Maven Central with the vanniktech plugin, signs the publications and fills the POM.                                                                                                             |
-| `io.github.manriif.konventions.dokka`    | Configures the API reference, with the `README.md` of the module as its first page. In the root project, writes it to `docs/api/<version>`. |
+| `io.github.manriif.konventions.dokka`    | Configures the API reference, with the `README.md` of the module as its first page. In the root project, writes it to `docs/api/<version>`, except in an included build. |
 | `io.github.manriif.konventions.internal` | Applies `dokka` and `publish`, for a published module that only the other modules of the project use. Records no API. |
 | `io.github.manriif.konventions.common`   | Applies `internal`. With `kmp` or `jvm`, checks the public API against the dump committed in the module. |
 
@@ -93,7 +93,7 @@ pluginManagement {
 }
 
 plugins {
-    id("io.github.manriif.konventions") version "0.0.3"
+    id("io.github.manriif.konventions") version "0.0.4"
 }
 
 rootProject.name = "example-project"
